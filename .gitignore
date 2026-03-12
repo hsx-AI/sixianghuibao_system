@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+.env.local
+*.egg-info/
+.eggs/
+
+# 运行时数据（SQLite、上传文件、备份、预览等）
+data/
+
+# 统计/插件生成
+.VSCodeCounter/
+
+# 前端（与 frontend/.gitignore 一致，根目录也排除）
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# 编辑器与系统
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.log

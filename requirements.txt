@@ -1,0 +1,22 @@
+# 后端依赖配置
+# Python 版本要求: 3.8+
+
+# Web 框架
+fastapi==0.123.0
+uvicorn[standard]==0.38.0
+
+# 数据库 ORM
+sqlmodel==0.0.27
+sqlalchemy==2.0.44
+
+# 认证和安全
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.20
+
+# 配置管理
+pydantic-settings==2.12.0
+python-dotenv==1.2.1
+
+# 类型检查
+pydantic==2.12.5
