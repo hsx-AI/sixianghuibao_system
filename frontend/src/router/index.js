@@ -217,7 +217,19 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
-  
+
+  // 单点登录回调：主系统 OA 跳转带 sso_token 时，写入 token 并进入首页
+  if (to.query.sso_token) {
+    try {
+      localStorage.setItem('token', to.query.sso_token)
+      userStore.token = to.query.sso_token
+      next({ path: '/dashboard', query: {}, replace: true })
+    } catch (e) {
+      next('/login')
+    }
+    return
+  }
+
   // 设置页面标题
   document.title = to.meta.title ? `${to.meta.title} - 智能制造工艺部党总支积极分子思想汇报审核平台` : '智能制造工艺部党总支积极分子思想汇报审核平台'
   

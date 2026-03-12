@@ -6,6 +6,7 @@ from app.routes import auth as auth_routes
 from app.routes import feedback as feedback_routes
 from app.routes import integration as integration_routes
 from app.routes import reports as report_routes
+from app.routes import sso as sso_routes
 from app.routes import users as user_routes
 from app.utils.backup import backup_database
 
@@ -27,6 +28,7 @@ def create_app() -> FastAPI:
     app.include_router(feedback_routes.router, prefix="/api")
     app.include_router(integration_routes.router, prefix="/api")
     app.include_router(report_routes.router, prefix="/api")
+    app.include_router(sso_routes.router, prefix="/api")
     app.include_router(user_routes.router, prefix="/api")
 
     @app.on_event("startup")
