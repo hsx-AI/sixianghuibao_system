@@ -140,15 +140,30 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { changePassword } from '@/api/auth'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
+
+// 单点登录失败时 OA 会重定向到 /login?error=xxx，在此提示
+const ssoErrorMessages = {
+  missing_ticket: '缺少登录凭证，请从 OA 首页重新点击「思想汇报管理」进入。',
+  invalid_ticket: '登录凭证无效或已过期，请从 OA 首页重新点击「思想汇报管理」进入。',
+  user_not_found: '本系统未找到对应用户，请确认 OA 用户名与思想汇报系统的用户名/真实姓名一致。',
+  sso_not_configured: '单点登录未配置，请联系管理员。'
+}
+onMounted(() => {
+  const err = route.query.error
+  if (err && ssoErrorMessages[err]) {
+    ElMessage.warning(ssoErrorMessages[err])
+  }
+})
 
 const loginFormRef = ref(null)
 const loading = ref(false)

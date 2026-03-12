@@ -218,11 +218,12 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
 
-  // 单点登录回调：主系统 OA 跳转带 sso_token 时，写入 token 并进入首页
-  if (to.query.sso_token) {
+  // 单点登录回调：主系统 OA 跳转带 sso_token 时，写入 token 并进入首页（同时检查 to.query 和 window.location，兼容 redirect 导致 query 丢失）
+  const ssoToken = (to.query.sso_token || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sso_token') : null) || '').trim()
+  if (ssoToken) {
     try {
-      localStorage.setItem('token', to.query.sso_token)
-      userStore.token = to.query.sso_token
+      localStorage.setItem('token', ssoToken)
+      userStore.token = ssoToken
       next({ path: '/dashboard', query: {}, replace: true })
     } catch (e) {
       next('/login')

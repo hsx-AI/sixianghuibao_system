@@ -7,6 +7,7 @@ import base64
 import hmac
 import hashlib
 import json
+import logging
 import time
 from datetime import timedelta
 
@@ -19,6 +20,7 @@ from app.config import settings
 from app.database import get_session
 from app.models import User
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sso", tags=["sso"])
 
 
@@ -64,10 +66,12 @@ def sso_entry(
 
     payload = _verify_ticket(ticket.strip())
     if not payload:
+        logger.warning("SSO ticket 校验失败（签名/过期或格式错误）")
         return RedirectResponse(url=_login_url_with_error("invalid_ticket"), status_code=302)
 
     name = (payload.get("name") or payload.get("sub") or "").strip()
     if not name:
+        logger.warning("SSO ticket 中无 name/sub")
         return RedirectResponse(url=_login_url_with_error("invalid_ticket"), status_code=302)
 
     # 用户名映射：先按 username，再按 real_name
@@ -77,6 +81,7 @@ def sso_entry(
         ).limit(1)
     ).first()
     if not user:
+        logger.warning("SSO 用户名未找到: name=%r（需与本系统 User.username 或 User.real_name 一致）", name)
         return RedirectResponse(url=_login_url_with_error("user_not_found"), status_code=302)
 
     expires = timedelta(minutes=settings.access_token_expire_minutes)
@@ -87,11 +92,10 @@ def sso_entry(
 
     base_url = (getattr(settings, "frontend_base_url", None) or "").strip().rstrip("/")
     if not base_url:
-        base_url = "/"
-    if base_url == "/":
-        redirect_url = f"/?sso_token={access_token}"
-    else:
-        redirect_url = f"{base_url}/?sso_token={access_token}"
+        logger.error("SSO 成功但未配置 frontend_base_url，无法重定向到前端")
+        return RedirectResponse(url=_login_url_with_error("sso_not_configured"), status_code=302)
+    redirect_url = f"{base_url}/?sso_token={access_token}"
+    logger.info("SSO 登录成功: user=%s, 重定向至前端", user.username)
     return RedirectResponse(url=redirect_url, status_code=302)
 
 
