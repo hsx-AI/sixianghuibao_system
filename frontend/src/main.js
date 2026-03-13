@@ -8,6 +8,16 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 
+// SSO 回调：在 Vue/Router 初始化之前处理，避免 redirect 导致 query 丢失
+;(function handleSsoCallback() {
+  const params = new URLSearchParams(window.location.search)
+  const ssoToken = params.get('sso_token')
+  if (ssoToken) {
+    localStorage.setItem('token', ssoToken)
+    window.history.replaceState({}, '', '/dashboard')
+  }
+})()
+
 const app = createApp(App)
 const pinia = createPinia()
 

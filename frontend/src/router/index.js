@@ -214,22 +214,9 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫
+// 路由守卫（SSO token 已在 main.js 中于 Vue 初始化前处理，无需在此处理）
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
-
-  // 单点登录回调：主系统 OA 跳转带 sso_token 时，写入 token 并进入首页（同时检查 to.query 和 window.location，兼容 redirect 导致 query 丢失）
-  const ssoToken = (to.query.sso_token || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sso_token') : null) || '').trim()
-  if (ssoToken) {
-    try {
-      localStorage.setItem('token', ssoToken)
-      userStore.token = ssoToken
-      next({ path: '/dashboard', query: {}, replace: true })
-    } catch (e) {
-      next('/login')
-    }
-    return
-  }
 
   // 设置页面标题
   document.title = to.meta.title ? `${to.meta.title} - 智能制造工艺部党总支积极分子思想汇报审核平台` : '智能制造工艺部党总支积极分子思想汇报审核平台'
