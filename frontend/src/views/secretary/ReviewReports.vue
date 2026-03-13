@@ -5,7 +5,7 @@
       <template #header>
         <div class="card-header">
           <el-icon><EditPen /></el-icon>
-          <span>思想汇报审阅（{{ zhibuName }}）</span>
+          <span>思想汇报审阅<span v-if="zhibuName">（{{ zhibuName }}）</span></span>
           <el-button
             type="primary"
             size="small"

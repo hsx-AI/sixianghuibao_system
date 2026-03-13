@@ -29,6 +29,22 @@
           </div>
         </div>
 
+        <!-- 需要我审核的提示（培养人/组织委员/支部书记/党总支） -->
+        <el-alert
+          v-if="pendingCount > 0 && hasReviewRole()"
+          type="warning"
+          :title="`您有 ${pendingCount} 篇思想汇报待审核`"
+          show-icon
+          class="pending-alert"
+        >
+          <template #default>
+            <span>请及时处理待审核的思想汇报。</span>
+            <el-button type="warning" size="small" style="margin-left: 12px" @click="goToReview">
+              去审核
+            </el-button>
+          </template>
+        </el-alert>
+
         <el-divider />
 
         <div class="quick-actions">
@@ -260,7 +276,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ROLES, ROLE_NAMES, REPORT_STATUS_NAMES, REPORT_STATUS_TYPES } from '@/utils/constants'
-import { getReportList } from '@/api/report'
+import { getReportList, getPendingReports } from '@/api/report'
 import {
   Promotion,
   DocumentAdd,
@@ -284,8 +300,39 @@ const userStore = useUserStore()
 const reports = ref([])
 const reportsLoading = ref(false)
 
+// 待当前用户审核的数量（培养人/组织委员/支部书记/党总支）
+const pendingCount = ref(0)
+
 const hasRole = (role) => {
   return userStore.role === role
+}
+
+// 是否有审核权限（需要展示「待我审核」提示）
+const hasReviewRole = () => {
+  return [ROLES.PYR, ROLES.ZZWY, ROLES.ZBSJ, ROLES.ZZS].includes(userStore.role)
+}
+
+// 跳转到当前角色对应的审核页
+const goToReview = () => {
+  const routeMap = {
+    [ROLES.PYR]: '/pyr-review',
+    [ROLES.ZZWY]: '/zzwy-review',
+    [ROLES.ZBSJ]: '/zbsj-review',
+    [ROLES.ZZS]: '/zzs-review'
+  }
+  const path = routeMap[userStore.role]
+  if (path) router.push(path)
+}
+
+// 加载待审核数量
+const loadPendingCount = async () => {
+  if (!hasReviewRole()) return
+  try {
+    const data = await getPendingReports()
+    pendingCount.value = Array.isArray(data) ? data.length : 0
+  } catch (e) {
+    pendingCount.value = 0
+  }
 }
 
 const getRoleName = () => {
@@ -371,6 +418,7 @@ onMounted(() => {
   if (hasRole(ROLES.ACTIVIST)) {
     loadReports()
   }
+  loadPendingCount()
 })
 </script>
 
@@ -418,6 +466,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.pending-alert {
+  margin-top: 4px;
+}
+
+.pending-alert :deep(.el-alert__content) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .welcome-top {
